@@ -1,0 +1,8 @@
+# AI-CS Chatbot Requirements
+# This chatbot uses only Python standard library
+# No external dependencies required
+
+# For future enhancements (optional):
+# flask>=2.0.0  # For web interface
+# requests>=2.28.0  # For API integrations
+# transformers>=4.0.0  # For advanced NLP features
