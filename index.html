@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-CS Chatbot - Interactive Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 20px 20px 0 0;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+            background: #f8f9fa;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message.user {
+            justify-content: flex-end;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 15px;
+            word-wrap: break-word;
+        }
+        
+        .user .message-content {
+            background: #667eea;
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .bot .message-content {
+            background: white;
+            color: #333;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .input-area {
+            padding: 20px;
+            background: white;
+            border-radius: 0 0 20px 20px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+        
+        input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 15px;
+            outline: none;
+            transition: border 0.3s;
+        }
+        
+        input:focus {
+            border-color: #667eea;
+        }
+        
+        button {
+            padding: 15px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #764ba2;
+        }
+        
+        .quick-topics {
+            padding: 0 25px 20px;
+            background: #f8f9fa;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .topic-btn {
+            padding: 8px 15px;
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+        
+        .topic-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI-CS Chatbot</h1>
+            <p>Ask me anything about AI and Computer Science!</p>
+        </div>
+        
+        <div class="quick-topics">
+            <button class="topic-btn" onclick="sendQuickQuery('What is machine learning?')">Machine Learning</button>
+            <button class="topic-btn" onclick="sendQuickQuery('Tell me about neural networks')">Neural Networks</button>
+            <button class="topic-btn" onclick="sendQuickQuery('Explain NLP')">NLP</button>
+            <button class="topic-btn" onclick="sendQuickQuery('What are algorithms?')">Algorithms</button>
+            <button class="topic-btn" onclick="sendQuickQuery('Explain databases')">Databases</button>
+        </div>
+        
+        <div class="chat-area" id="chatArea">
+            <div class="message bot">
+                <div class="message-content">
+                    👋 Welcome! I'm your AI & Computer Science assistant. I can answer questions about:
+                    <br><br>
+                    • Machine Learning & Deep Learning<br>
+                    • Neural Networks & NLP<br>
+                    • Algorithms & Data Structures<br>
+                    • Databases & Operating Systems<br>
+                    • Programming & Cloud Computing<br>
+                    <br>
+                    Try asking me something or click a topic above!
+                </div>
+            </div>
+        </div>
+        
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Ask about AI or CS topics..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+    
+    <script>
+        const knowledgeBase = {
+            "machine learning": {
+                definition: "Machine Learning is a subset of AI that enables systems to learn and improve from experience without being explicitly programmed.",
+                types: ["Supervised Learning", "Unsupervised Learning", "Reinforcement Learning", "Semi-supervised Learning"],
+                applications: ["Image Recognition", "Natural Language Processing", "Recommendation Systems", "Predictive Analytics"]
+            },
+            "deep learning": {
+                definition: "Deep Learning is a subset of machine learning based on artificial neural networks with multiple layers.",
+                key_concepts: ["Neural Networks", "Backpropagation", "CNNs", "RNNs", "Transformers"],
+                frameworks: ["TensorFlow", "PyTorch", "Keras", "JAX"]
+            },
+            "neural network": {
+                definition: "A neural network is a computing system inspired by biological neural networks that learns to perform tasks by considering examples.",
+                components: ["Input Layer", "Hidden Layers", "Output Layer", "Weights", "Biases", "Activation Functions"],
+                types: ["Feedforward NN", "Convolutional NN", "Recurrent NN", "Transformer"]
+            },
+            "nlp": {
+                definition: "Natural Language Processing (NLP) is a branch of AI that helps computers understand, interpret and manipulate human language.",
+                tasks: ["Sentiment Analysis", "Named Entity Recognition", "Machine Translation", "Text Summarization", "Question Answering"],
+                models: ["BERT", "GPT", "T5", "RoBERTa"]
+            },
+            "algorithm": {
+                definition: "An algorithm is a step-by-step procedure or formula for solving a problem or completing a task.",
+                complexity: ["Time Complexity", "Space Complexity", "Big O Notation"],
+                types: ["Sorting", "Searching", "Graph Algorithms", "Dynamic Programming", "Greedy Algorithms"]
+            },
+            "data structure": {
+                definition: "A data structure is a specialized format for organizing, processing, retrieving and storing data.",
+                types: ["Array", "Linked List", "Stack", "Queue", "Tree", "Graph", "Hash Table", "Heap"],
+                operations: ["Insertion", "Deletion", "Search", "Traversal"]
+            },
+            "database": {
+                definition: "A database is an organized collection of structured information or data stored electronically.",
+                types: ["Relational (SQL)", "NoSQL", "Graph", "Document-based", "Key-Value"],
+                concepts: ["ACID Properties", "Normalization", "Indexing", "Query Optimization"]
+            },
+            "operating system": {
+                definition: "An Operating System is system software that manages computer hardware and software resources.",
+                functions: ["Process Management", "Memory Management", "File System", "I/O Management", "Security"],
+                examples: ["Linux", "Windows", "macOS", "Unix"]
+            },
+            "programming": {
+                definition: "Programming is the process of creating a set of instructions that tell a computer how to perform a task.",
+                paradigms: ["Object-Oriented", "Functional", "Procedural", "Declarative"],
+                languages: ["Python", "Java", "C++", "JavaScript", "Go", "Rust"]
+            },
+            "cloud computing": {
+                definition: "Cloud computing is the delivery of computing services over the internet.",
+                models: ["IaaS", "PaaS", "SaaS"],
+                providers: ["AWS", "Google Cloud", "Microsoft Azure", "IBM Cloud"]
+            }
+        };
+        
+        const keywords = {
+            "ml": "machine learning",
+            "nn": "neural network",
+            "ai": "machine learning",
+            "natural language": "nlp",
+            "os": "operating system",
+            "db": "database",
+            "ds": "data structure",
+            "algo": "algorithm"
+        };
+        
+        function findTopic(query) {
+            query = query.toLowerCase();
+            
+            for (let topic in knowledgeBase) {
+                if (query.includes(topic)) {
+                    return topic;
+                }
+            }
+            
+            for (let keyword in keywords) {
+                if (query.includes(keyword)) {
+                    return keywords[keyword];
+                }
+            }
+            
+            return null;
+        }
+        
+        function generateResponse(query) {
+            const topic = findTopic(query);
+            
+            if (topic) {
+                const info = knowledgeBase[topic];
+                let response = `📚 <strong>${topic.toUpperCase()}</strong><br><br>`;
+                response += `<strong>Definition:</strong> ${info.definition}<br><br>`;
+                
+                for (let key in info) {
+                    if (key !== 'definition' && Array.isArray(info[key])) {
+                        response += `<strong>${key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}:</strong><br>`;
+                        info[key].forEach(item => {
+                            response += `• ${item}<br>`;
+                        });
+                        response += '<br>';
+                    }
+                }
+                
+                return response;
+            } else {
+                return `I specialize in AI and Computer Science topics. Try asking about:<br><br>
+                        • Machine Learning<br>
+                        • Deep Learning<br>
+                        • Neural Networks<br>
+                        • Natural Language Processing (NLP)<br>
+                        • Algorithms<br>
+                        • Data Structures<br>
+                        • Databases<br>
+                        • Operating Systems<br>
+                        • Programming<br>
+                        • Cloud Computing`;
+            }
+        }
+        
+        function addMessage(content, isUser) {
+            const chatArea = document.getElementById('chatArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = content;
+            
+            messageDiv.appendChild(contentDiv);
+            chatArea.appendChild(messageDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+        
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (message === '') return;
+            
+            addMessage(message, true);
+            
+            setTimeout(() => {
+                const response = generateResponse(message);
+                addMessage(response, false);
+            }, 500);
+            
+            input.value = '';
+        }
+        
+        function sendQuickQuery(query) {
+            document.getElementById('userInput').value = query;
+            sendMessage();
+        }
+    </script>
+</body>
+</html>
